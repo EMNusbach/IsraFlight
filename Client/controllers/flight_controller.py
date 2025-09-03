@@ -14,3 +14,6 @@ class FlightController:
 
     def delete_flight(self, flight_id):
         return self.api.delete(f"flights/{flight_id}")
+    
+    def update_flight(self, plane_id, data):
+        return self.api.put(f"flights/{plane_id}", data)  
