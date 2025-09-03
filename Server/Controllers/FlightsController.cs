@@ -30,7 +30,7 @@ namespace Server.Controllers
 
         // PUT: api/flights/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFlight(int id, Flight flight)
+        public async Task<IActionResult> PutFlight(int id, [FromBody] Flight flight)
         {
             if (id != flight.Id)
             {

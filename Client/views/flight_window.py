@@ -133,21 +133,34 @@ class FlightWindow(QMainWindow):
         """)
         layout = QVBoxLayout(self.add_form)
 
-        # Plane ID
+        # Plane 
         self.plane_input = QComboBox()
-        self.plane_input.addItems(["1", "2", "3"])  # Replace with actual IDs
-        layout.addWidget(QLabel("Plane ID:"))
+        planes = self.plane_controller.get_all_planes()
+
+        self.plane_map = {}  # nickname → id
+        for plane in planes:
+            nickname = plane.get('nickname', f"Plane {plane['id']}")
+            self.plane_input.addItem(nickname, plane['id'])
+            self.plane_map[nickname] = plane['id']
+
+        layout.addWidget(QLabel("Plane:"))
         layout.addWidget(self.plane_input)
 
-        # Departure Airport
+        # === Airports (Departure & Arrival) ===
         self.departure_airport = QComboBox()
-        self.departure_airport.addItems(["TLV", "JFK", "AMS"])  # Replace with real list
+        self.arrival_airport = QComboBox()
+        airports = self.airport_controller.get_all_airports()
+
+        self.airport_map = {}  # name → id
+        for airport in airports:
+            name = airport.get('name', f"Airport {airport['id']}")
+            self.departure_airport.addItem(name, airport['id'])
+            self.arrival_airport.addItem(name, airport['id'])
+            self.airport_map[name] = airport['id']
+
         layout.addWidget(QLabel("Departure Airport:"))
         layout.addWidget(self.departure_airport)
 
-        # Arrival Airport
-        self.arrival_airport = QComboBox()
-        self.arrival_airport.addItems(["LHR", "CDG", "TLV"])
         layout.addWidget(QLabel("Arrival Airport:"))
         layout.addWidget(self.arrival_airport)
 
@@ -194,9 +207,9 @@ class FlightWindow(QMainWindow):
 
     def submit_flight(self):
         data = {
-            "PlaneId": int(self.plane_input.currentText()),
-            "DepartureAirportId": self.departure_airport.currentText(),
-            "ArrivalAirportId": self.arrival_airport.currentText(),
+            "PlaneId": self.plane_input.currentData(),
+            "DepartureAirportId": self.departure_airport.currentData(),
+            "ArrivalAirportId": self.arrival_airport.currentData(),
             "DepartureTime": self.departure_time.dateTime().toString(Qt.ISODate),
             "ArrivalTime": self.arrival_time.dateTime().toString(Qt.ISODate),
             "Price": float(self.price_input.value()),
