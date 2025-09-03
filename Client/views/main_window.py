@@ -4,6 +4,8 @@ from PySide6.QtWidgets import (QLabel, QPushButton, QMainWindow, QGraphicsDropSh
 from controllers.auth_controller import AuthController
 from controllers.api_controller import ApiController
 from views.login_dialog import LoginDialog
+from views.user_window import UserWindow
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -197,9 +199,14 @@ class MainWindow(QMainWindow):
         api = ApiController(base_url="http://localhost:5126/api")
         auth_controller = AuthController(api=api)
         dialog = LoginDialog(auth_controller, api)
-        dialog.setParent(self)  # Set parent for better modal behavior
-        
+        dialog.setParent(self)
+
         if dialog.exec():
-            print("✅ Login successful!")
+            user = dialog.get_user()   # You need this method in LoginDialog to return user info
+            print("✅ Login successful!", user)
+
+            # self.user_window = UserWindow(user, api)
+            # self.user_window.show()
+            self.close()  # close landing page if you want
         else:
             print("❌ Login cancelled.")
