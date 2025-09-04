@@ -498,9 +498,9 @@ class PlaneWindow(QMainWindow):
             }
             
             # Update via controller
-            success = self.controller.update_plane(plane_id, updated_data)
+            result = self.controller.update_plane(plane_id, updated_data)
             
-            if success:
+            if result["success"]:
                 # Update card data
                 card.plane_data.update(updated_data)
                 
@@ -516,7 +516,7 @@ class PlaneWindow(QMainWindow):
                 
                 QMessageBox.information(self, "Success", "Plane updated successfully!")
             else:
-                QMessageBox.warning(self, "Error", "Failed to update plane.")
+                QMessageBox.warning(self, "Error",f"Failed to update plane: {result["error"]}")
                 
         except ValueError:
             QMessageBox.warning(self, "Error", "Please enter a valid year.")
@@ -541,13 +541,13 @@ class PlaneWindow(QMainWindow):
             }
             
             # Add via controller
-            success = self.controller.add_plane(new_plane_data)
+            result = self.controller.add_plane(new_plane_data)
             
-            if success:
+            if result["success"]:
                 QMessageBox.information(self, "Success", "Plane added successfully!")
                 self.load_planes()  # Reload all planes
             else:
-                QMessageBox.warning(self, "Error", "Failed to add plane.")
+                QMessageBox.warning(self, "Error",f"Failed to add plane: {result["error"]}")
                 
         except ValueError:
             QMessageBox.warning(self, "Error", "Please enter a valid year.")

@@ -233,7 +233,7 @@ class FlightWindow(QMainWindow):
                 font-size: 12pt;
                 background: white;
                 min-height: 20px;
-                with: 300px
+                width: 300px
             }
             
             QComboBox:focus, QDateTimeEdit:focus, QDoubleSpinBox:focus {
