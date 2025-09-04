@@ -18,9 +18,9 @@ def generate_ticket_pdf(booking, flight, filename=None):
     y -= 40
     c.drawString(80, y, f"Booking ID: {booking.id}")
     y -= 20
-    c.drawString(80, y, f"User ID: {booking.user_id}")
+    c.drawString(80, y, f"User ID: {booking.frequentFlyerId}")
     y -= 20
-    c.drawString(80, y, f"Flight ID: {booking.flight_id}")
+    c.drawString(80, y, f"Flight ID: {booking.flightId}")
     y -= 20
     c.drawString(80, y, f"Seat: {booking.seat or 'N/A'}")
     y -= 20

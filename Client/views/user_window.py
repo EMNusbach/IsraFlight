@@ -249,8 +249,10 @@ class UserWindow(QMainWindow):
 
 
     def on_my_bookings(self):
-        self.my_bookings_window = MyBookingsWindow(self.user_id)
+        api = ApiController(base_url="http://localhost:5126/api")
+        self.my_bookings_window = MyBookingsWindow(self.user_id, api)
         self.my_bookings_window.show()
+
 
         print("🧾 My Bookings clicked")
 

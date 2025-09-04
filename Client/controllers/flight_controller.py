@@ -8,6 +8,11 @@ class FlightController:
     def get_all_flights(self):
         data = self.api.get("flights")
         return [Flight(**item) for item in data]
+    
+    def get_flight_by_id(self, flight_id: int):
+        # Call the API endpoint for a specific flight
+        data = self.api.get(f"flights/{flight_id}")
+        return Flight(**data)
 
     def create_flight(self, flight_data):
         return self.api.post("flights", json=flight_data)
