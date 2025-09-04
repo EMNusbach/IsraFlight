@@ -26,10 +26,11 @@ class Auth:
 
 @dataclass
 class Booking:
-    Id: Optional[int]
-    FrequentFlyerId: int
-    FlightId: int
-    BookingDate: str # datetime string
+    id: Optional[int]
+    frequentFlyerId: int
+    flightId: int
+    bookingDate: str  # datetime string
+
 
 @dataclass
 class Flight:

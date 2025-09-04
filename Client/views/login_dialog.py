@@ -28,6 +28,8 @@ class LoginDialog(QDialog):
         self.init_ui()
         self.connect_signals()
         self.add_animations()
+        self.user_obj = None  # <-- store logged-in user here
+
     
     def setup_styling(self):
         """Setup modern styling with dusty blue aesthetic"""
@@ -277,6 +279,8 @@ class LoginDialog(QDialog):
     
     def on_login_success(self, user_obj):
         """Handle successful login"""
+        self.user_obj = user_obj   # <-- save the user object
+        
         if user_obj.Role.lower() == "admin":
             admin_ctrl = AdminController(self.api)
             dlg = AdminWindow(admin_ctrl)
@@ -390,3 +394,7 @@ class LoginDialog(QDialog):
         painter.fillPath(path, Qt.transparent)
         
         super().paintEvent(event)
+        
+    def get_user(self):
+        """Return logged-in user after dialog closes"""
+        return self.user_obj

@@ -195,18 +195,18 @@ class MainWindow(QMainWindow):
         super().resizeEvent(event)
     
     def open_login_dialog(self):
-        """Open enhanced login dialog"""
         api = ApiController(base_url="http://localhost:5126/api")
         auth_controller = AuthController(api=api)
         dialog = LoginDialog(auth_controller, api)
         dialog.setParent(self)
 
         if dialog.exec():
-            user = dialog.get_user()   # You need this method in LoginDialog to return user info
+            user = dialog.get_user()
             print("✅ Login successful!", user)
 
-            # self.user_window = UserWindow(user, api)
-            # self.user_window.show()
-            self.close()  # close landing page if you want
+            self.user_window = UserWindow(user)   # keep a reference here
+            self.user_window.show()
+
+            self.close()  # close landing page
         else:
             print("❌ Login cancelled.")
