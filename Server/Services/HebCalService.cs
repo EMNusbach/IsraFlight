@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Globalization;
 
@@ -22,31 +23,48 @@ public class HebCalService
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
-        var hebcalData = JsonSerializer.Deserialize<HebCalResponse>(json);
+        
+        // Configure JsonSerializer options for property name handling
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        
+        var hebcalData = JsonSerializer.Deserialize<HebCalResponse>(json, options);
 
         bool isShabbat = false;
         string parasha = "";
         DateTime entryTime = DateTime.MinValue;
         DateTime exitTime = DateTime.MinValue;
 
-        foreach (var item in hebcalData.items)
+        if (hebcalData?.Items != null)
         {
-            // Get parasha name
-            if (item.category == "parashat" && string.IsNullOrEmpty(parasha))
+            foreach (var item in hebcalData.Items)
             {
-                parasha = item.hebrew;
-            }
+                // Get parasha name
+                if (item.Category == "parashat" && string.IsNullOrEmpty(parasha))
+                {
+                    parasha = item.Hebrew ?? item.Title ?? "";
+                }
 
-            // Shabbat entry (candle lighting)
-            if (item.category == "candles" && entryTime == DateTime.MinValue)
-            {
-                DateTime.TryParse(item.date, out entryTime);
-            }
+                // Shabbat entry (candle lighting)
+                if (item.Category == "candles" && entryTime == DateTime.MinValue)
+                {
+                    if (DateTime.TryParse(item.Date, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var parsedEntry))
+                    {
+                        entryTime = parsedEntry;
+                    }
+                }
 
-            // Shabbat exit (havdalah)
-            if (item.category == "havdalah" && exitTime == DateTime.MinValue)
-            {
-                DateTime.TryParse(item.date, out exitTime);
+                // Shabbat exit (havdalah)
+                if (item.Category == "havdalah" && exitTime == DateTime.MinValue)
+                {
+                    if (DateTime.TryParse(item.Date, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var parsedExit))
+                    {
+                        exitTime = parsedExit;
+                    }
+                }
             }
         }
 
@@ -58,21 +76,26 @@ public class HebCalService
 
         return (isShabbat, parasha, entryTime, exitTime);
     }
+}
 
+// Response models for HebCal 
+public class HebCalResponse
+{
+    [JsonPropertyName("items")]
+    public List<HebCalItem> Items { get; set; } = new List<HebCalItem>();
+}
 
-    // Response models for HebCal
-    public class HebCalResponse
-    {
-        public List<HebCalItem> items { get; set; }
-    }
+public class HebCalItem
+{
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-    public class HebCalItem
-    {
-        public string title { get; set; }
-        public string hebrew { get; set; }
-        public string category { get; set; }
+    [JsonPropertyName("hebrew")]
+    public string? Hebrew { get; set; }
 
-        public string date { get; set; }
-    }
+    [JsonPropertyName("category")]
+    public string? Category { get; set; }
 
+    [JsonPropertyName("date")]
+    public string? Date { get; set; }
 }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IsraFlight.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ceb596bb091fc36f7f89e76e19a4902ec10de50a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+08242d39005650909e22a514f93f489b05bb9634")]
 [assembly: System.Reflection.AssemblyProductAttribute("IsraFlight.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IsraFlight.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
