@@ -7,6 +7,8 @@ from controllers.auth_controller import AuthController
 from controllers.admin_controller import AdminController
 from views.admin_window import AdminWindow
 from views.register_dialog import RegisterDialog
+from views.user_window import UserWindow
+
 
 class LoginDialog(QDialog):
     def __init__(self, auth_controller: AuthController, api):
@@ -283,7 +285,11 @@ class LoginDialog(QDialog):
             self.accept()  # Close login dialog first
             dlg.show()
         else:
-            self.accept()
+            # Open user dashboard
+            self.user_window = UserWindow(user_obj)
+            self.user_window.show()
+            self.accept()  # Close login dialog
+
     
     def on_login_failure(self, message):
         """Handle login failure with better UX"""
