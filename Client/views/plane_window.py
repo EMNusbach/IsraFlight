@@ -210,7 +210,6 @@ class PlaneWindow(QMainWindow):
                 widget.setParent(None)
 
         planes = self.controller.get_all_planes()
-        print("Loaded planes:", planes)
 
         if not planes:
             QMessageBox.warning(self, "Error", "No planes found or API error.")

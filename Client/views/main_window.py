@@ -198,8 +198,5 @@ class MainWindow(QMainWindow):
         auth_controller = AuthController(api=api)
         dialog = LoginDialog(auth_controller, api)
         dialog.setParent(self)  # Set parent for better modal behavior
-        
-        if dialog.exec():
-            print("✅ Login successful!")
-        else:
-            print("❌ Login cancelled.")
+        dialog.exec()
+      
