@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QRect
 from controllers.auth_controller import AuthController 
 from controllers.admin_controller import AdminController
 from views.admin_window import AdminWindow
+from views.register_dialog import RegisterDialog
 from views.user_window import UserWindow
 
 
@@ -306,27 +307,8 @@ class LoginDialog(QDialog):
         msg_box.setText(message)
         msg_box.setIcon(QMessageBox.Warning)
         msg_box.setStandardButtons(QMessageBox.Ok)
-        
-        # Style the message box
-        msg_box.setStyleSheet("""
-            QMessageBox {
-                background-color: white;
-                color: #2d3748;
-                font-size: 12pt;
-            }
-            QMessageBox QPushButton {
-                background-color: #667eea;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 20px;
-                font-weight: 500;
-                min-width: 80px;
-            }
-            QMessageBox QPushButton:hover {
-                background-color: #5a67d8;
-            }
-        """)
+        msg_box.setStyleSheet("""QMessageBox {
+            background-color: white;}""")
         
         msg_box.exec()
     
@@ -356,30 +338,11 @@ class LoginDialog(QDialog):
     def on_register_clicked(self):
         """Handle registration link click"""
         print("🔗 Registration link clicked - opening signup flow...")
-        # You can implement registration dialog here
-        
-        # Show coming soon message for now
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("Coming Soon")
-        msg_box.setText("Registration feature is coming soon!\nStay tuned for updates.")
-        msg_box.setIcon(QMessageBox.Information)
-        msg_box.setStyleSheet("""
-            QMessageBox {
-                background-color: white;
-                color: #2d3748;
-                font-size: 12pt;
-            }
-            QMessageBox QPushButton {
-                background-color: #48bb78;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 20px;
-                font-weight: 500;
-                min-width: 80px;
-            }
-        """)
-        msg_box.exec()
+
+        dlg = RegisterDialog(self.api)  
+        dlg.exec()  
+
+
     
     def paintEvent(self, event):
         """Custom paint event for rounded corners and shadow"""
