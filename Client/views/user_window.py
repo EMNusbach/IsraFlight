@@ -16,18 +16,14 @@ class UserWindow(QMainWindow):
         self.user_id = getattr(user_obj, "Id", None) or getattr(user_obj, "id", None)
 
         self.setWindowTitle("IsraFlight - User Dashboard")
-        self.setFixedSize(1000, 700)
-        # print(self.name)
+        self.setFixedSize(1200, 800)
         self.setWindowFlags(Qt.Window)
 
         self.setup_styling()
         self.init_ui()
 
-    
-
-           
     def setup_styling(self):
-        """Apply same design as AdminWindow"""
+        """Apply exact AdminWindow design styling"""
         self.setStyleSheet("""
             QMainWindow { background: transparent; }
 
@@ -39,8 +35,8 @@ class UserWindow(QMainWindow):
 
             QWidget#navBar {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #2b6cb0, stop:1 #2c5282);
-                border-bottom: 2px solid #2a4365;
+                    stop:0 #1a202c, stop:1 #2d3748);
+                border-bottom: 2px solid #4a5568;
             }
 
             QPushButton#backButton {
@@ -52,7 +48,6 @@ class UserWindow(QMainWindow):
                 font-weight: bold;
                 padding: 8px 12px;
             }
-
             QPushButton#backButton:hover {
                 background: rgba(255, 255, 255, 0.2);
                 border: 1px solid rgba(255, 255, 255, 0.3);
@@ -92,25 +87,23 @@ class UserWindow(QMainWindow):
                 border-radius: 12px;
                 padding: 20px 30px;
                 min-height: 80px;
-                min-width: 200px;
-                text-align: center;
+                min-width: 250px;
+                text-align: left;
             }
 
             QPushButton#bookFlightButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #4299e1, stop:1 #3182ce);
+                    stop:0 #667eea, stop:1 #764ba2);
             }
-
             QPushButton#bookFlightButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #3182ce, stop:1 #2b6cb0);
+                    stop:0 #5a67d8, stop:1 #6b46c1);
             }
 
             QPushButton#myBookingsButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                     stop:0 #48bb78, stop:1 #38a169);
             }
-
             QPushButton#myBookingsButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                     stop:0 #38a169, stop:1 #2f855a);
@@ -134,7 +127,6 @@ class UserWindow(QMainWindow):
         """)
 
     def init_ui(self):
-        """Initialize user dashboard UI"""
         self.main_frame = QFrame()
         self.main_frame.setObjectName("mainFrame")
 
@@ -145,7 +137,7 @@ class UserWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(self.main_frame)
 
-        # Shadow effect
+        # Shadow
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(40)
         shadow.setColor(Qt.black)
@@ -159,9 +151,9 @@ class UserWindow(QMainWindow):
         # --- NavBar ---
         nav_bar = QWidget()
         nav_bar.setObjectName("navBar")
-        nav_bar.setFixedHeight(70)
+        nav_bar.setFixedHeight(80)
         nav_layout = QHBoxLayout(nav_bar)
-        nav_layout.setContentsMargins(30, 15, 30, 15)
+        nav_layout.setContentsMargins(30, 20, 30, 20)
 
         self.btn_back = QPushButton("←")
         self.btn_back.setObjectName("backButton")
@@ -169,8 +161,11 @@ class UserWindow(QMainWindow):
 
         lbl_title = QLabel("User Dashboard")
         lbl_title.setObjectName("titleLabel")
+        lbl_title.setAlignment(Qt.AlignCenter)
+
         lbl_brand = QLabel("IsraFlight")
         lbl_brand.setObjectName("brandLabel")
+        lbl_brand.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
 
         nav_layout.addWidget(self.btn_back)
         nav_layout.addStretch(1)
@@ -196,7 +191,7 @@ class UserWindow(QMainWindow):
         subtitle.setAlignment(Qt.AlignCenter)
         content_layout.addWidget(subtitle)
 
-        # --- Action Buttons ---
+        # --- Buttons Grid (2x2 style) ---
         grid = QGridLayout()
         grid.setSpacing(45)
 
@@ -210,11 +205,12 @@ class UserWindow(QMainWindow):
 
         grid.addWidget(self.btn_book_flight, 0, 0)
         grid.addWidget(self.btn_my_bookings, 0, 1)
+
         content_layout.addLayout(grid)
         content_layout.addStretch()
         layout.addWidget(content)
 
-        # --- Connect Actions ---
+        # Connect actions
         self.btn_back.clicked.connect(self.close)
         self.btn_book_flight.clicked.connect(self.on_book_flight)
         self.btn_my_bookings.clicked.connect(self.on_my_bookings)
@@ -225,28 +221,29 @@ class UserWindow(QMainWindow):
         button.setCursor(QCursor(Qt.PointingHandCursor))
         button.setMinimumSize(250, 120)
 
-        inner = QVBoxLayout(button)
-        inner.setContentsMargins(20, 20, 20, 20)
-        inner.setSpacing(6)
+        layout = QVBoxLayout(button)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(6)
 
         lbl_icon = QLabel(icon)
         lbl_icon.setObjectName("iconLabel")
         lbl_icon.setAlignment(Qt.AlignCenter)
-        inner.addWidget(lbl_icon)
+        layout.addWidget(lbl_icon)
 
         lbl_title = QLabel(title)
         lbl_title.setObjectName("buttonTitle")
         lbl_title.setAlignment(Qt.AlignCenter)
-        inner.addWidget(lbl_title)
+        layout.addWidget(lbl_title)
 
         lbl_desc = QLabel(desc)
         lbl_desc.setObjectName("buttonDesc")
         lbl_desc.setAlignment(Qt.AlignCenter)
         lbl_desc.setWordWrap(True)
-        inner.addWidget(lbl_desc)
+        layout.addWidget(lbl_desc)
 
         button.setObjectName(style_class)
 
+        # Shadow like AdminWindow
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(15)
         shadow.setOffset(0, 5)
