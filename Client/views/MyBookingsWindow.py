@@ -6,6 +6,7 @@ from controllers.booking_controller import BookingController
 from controllers.flight_controller import FlightController
 from controllers.airport_controller import AirportController
 from services.pdf_service import generate_ticket_pdf
+from controllers.frequentFlyer_controller import FrequentFlyerController
 
 
 class MyBookingsWindow(QWidget):
@@ -38,7 +39,6 @@ class MyBookingsWindow(QWidget):
         main_layout.addWidget(self.results_area)
 
     def populate_bookings(self):
-        # Fetch bookings for the signed-in user only
         user_bookings = self.booking_controller.list_user_bookings(self.user_id)
         print("user_id:", self.user_id)
 
@@ -63,7 +63,6 @@ class MyBookingsWindow(QWidget):
                 print(f"Flight not found for booking {booking.id}")
                 continue
 
-            # Flight card
             card = QFrame()
             card.setFrameShape(QFrame.StyledPanel)
             card.setStyleSheet("""
@@ -77,7 +76,7 @@ class MyBookingsWindow(QWidget):
             """)
             layout = QVBoxLayout(card)
 
-            # Header: Flight number & booking ID
+            # Header
             header_layout = QHBoxLayout()
             header_layout.addWidget(QLabel(f"✈️ Flight {flight.id}"))
             header_layout.addStretch()
@@ -117,12 +116,11 @@ class MyBookingsWindow(QWidget):
             self.results_layout.addWidget(card)
 
     def get_airport_name(self, airport_id):
-        airports = self.airport_controller.get_all_airports()  # <-- change here
+        airports = self.airport_controller.get_all_airports()
         for a in airports:
             if a.get("id") == airport_id:
                 return a.get("name")
         return "Unknown Airport"
-
 
     def generate_pdf(self, booking):
         try:
@@ -130,6 +128,27 @@ class MyBookingsWindow(QWidget):
         except Exception:
             QMessageBox.warning(self, "Error", "Flight not found")
             return
-        file_path = f"PDF_files/ticket_{booking.id}.pdf"
-        generate_ticket_pdf(booking, flight, file_path)
-        QMessageBox.information(self, "PDF Created", f"PDF saved at {file_path}")
+
+        # Get traveler name automatically
+        frequent_flyer_controller = FrequentFlyerController(self.booking_controller.api)
+        traveler_name = frequent_flyer_controller.get_full_name(self.user_id)
+
+        # Get airport names automatically
+        dep_airport_name = self.get_airport_name(flight.departureAirportId)
+        arr_airport_name = self.get_airport_name(flight.arrivalAirportId)
+
+        # Generate PDF
+        pdf_path = generate_ticket_pdf(
+            booking,
+            flight,
+            traveler_name=traveler_name,
+            dep_airport_name=dep_airport_name,
+            arr_airport_name=arr_airport_name
+        )
+
+        # Open PDF automatically
+        import webbrowser
+        webbrowser.open_new(pdf_path)
+
+
+

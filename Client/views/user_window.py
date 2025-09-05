@@ -190,7 +190,7 @@ class UserWindow(QMainWindow):
 
         # Book Flight Button
         self.btn_book_flight = self.create_action_button(
-            "✈️", "Book a Flight", "Browse flights and reserve your seat", "bookFlightButton"
+            "✈️", "Book a Flight", "Browse flights and reserve your flight", "bookFlightButton"
         )
 
         # My Bookings Button

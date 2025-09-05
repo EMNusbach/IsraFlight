@@ -68,7 +68,6 @@ class Ticket:
     Id: Optional[int]
     BookingId: int
     FlightId: int
-    Seat: str  
     PdfUrl: str  
 
 

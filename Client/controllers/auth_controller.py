@@ -34,8 +34,4 @@ class AuthController(QObject):
 
 
 
-    # def register(self, username, password):
-    #     data = {"username": username, "password": password}
-    #     res = self.api.post("/auths/register", json=data)
-    #     user = res.get("user")
-    #     return user
+   
