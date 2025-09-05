@@ -31,10 +31,19 @@ class FrequentFlyerController(QObject):
 
 
     def get_full_name(self, user_id: int):
-        # ApiController.get already returns JSON, not Response
         try:
             data = self.api.get(f"FrequentFlyers/{user_id}")
-            return data.get("fullName", "Passenger")
+            print(f"API returned: {data}")  # Debug output
+
+            # Attempt to get fullName first, otherwise combine first and last names
+            full_name = data.get("fullName")
+            if not full_name:
+                first = data.get("FirstName") or data.get("firstName") or ""
+                last = data.get("LastName") or data.get("lastName") or ""
+                full_name = f"{first} {last}".strip()
+
+            return full_name if full_name else f"User #{user_id}"
+
         except Exception as e:
             print(f"Error fetching frequent flyer {user_id}: {e}")
-            return "Passenger"
+            return f"User #{user_id}"

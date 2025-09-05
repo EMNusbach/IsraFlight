@@ -1,15 +1,17 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QPushButton,
-    QLineEdit, QDateEdit, QSpinBox, QComboBox, QMessageBox, QScrollArea
+    QLineEdit, QDateEdit, QSpinBox, QComboBox, QMessageBox, QScrollArea,
+    QGraphicsDropShadowEffect
 )
 from PySide6.QtCore import QDate, Qt
 from datetime import datetime
 from fpdf import FPDF
+
 from controllers.airport_controller import AirportController
 from controllers.api_controller import ApiController
 from controllers.booking_controller import BookingController
 from controllers.flight_controller import FlightController
-from models import Flight, Airport  # Make sure your dataclasses exist
+from models import Flight, Airport
 
 
 class BookFlightWindow(QWidget):
@@ -18,108 +20,235 @@ class BookFlightWindow(QWidget):
         self.user_id = user_id
         self.selected_flight = None
 
-        # Initialize controllers
+        # Controllers
         api = ApiController(base_url="http://localhost:5126/api")
         self.booking_ctrl = BookingController(api)
         self.flight_ctrl = FlightController(api)
         self.airport_ctrl = AirportController(api)
 
-        # Fetch airports
+        # Airports
         self.airports = [Airport(**a) for a in self.airport_ctrl.get_all_airports()]
 
         self.setWindowTitle("Book a Flight")
-        self.setFixedSize(600, 700)
+        self.setFixedSize(700, 750)
         self.setWindowFlags(Qt.Window)
 
+        self.setup_styling()
         self.init_ui()
+
+    def setup_styling(self):
+        self.setStyleSheet("""
+            QWidget#mainFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #f8fafc, stop:1 #e2e8f0);
+                border: 1px solid rgba(226, 232, 240, 0.8);
+                border-radius: 20px;
+            }
+
+            QWidget#header {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #2b6cb0, stop:1 #2c5282);
+                border-bottom: 2px solid #2a4365;
+            }
+
+            QLabel#titleLabel {
+                font-size: 20pt;
+                font-weight: bold;
+                color: white;
+            }
+
+            QPushButton#closeButton {
+                background: rgba(255,255,255,0.1);
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 8px;
+                color: white;
+                font-size: 14pt;
+                font-weight: bold;
+                padding: 6px 12px;
+            }
+
+            QPushButton#closeButton:hover {
+                background: rgba(255,255,255,0.2);
+            }
+
+            QLabel#label {
+                font-size: 12pt;
+                font-weight: 500;
+                color: #2d3748;
+            }
+
+            QLineEdit, QSpinBox, QComboBox, QDateEdit {
+                border: 1px solid #cbd5e0;
+                border-radius: 8px;
+                padding: 6px;
+                font-size: 12pt;
+            }
+
+            QPushButton#actionButton {
+                font-size: 14pt;
+                font-weight: 600;
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 15px 20px;
+                min-height: 50px;
+                text-align: center;
+            }
+
+            QPushButton#searchButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #48bb78, stop:1 #38a169);
+            }
+
+            QPushButton#searchButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #38a169, stop:1 #2f855a);
+            }
+
+            QPushButton#bookButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #4299e1, stop:1 #3182ce);
+            }
+
+            QPushButton#bookButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #3182ce, stop:1 #2b6cb0);
+            }
+
+            QFrame#flightCard {
+                border: 1px solid #cbd5e0;
+                border-radius: 12px;
+                padding: 15px;
+                background-color: white;
+            }
+        """)
 
     def init_ui(self):
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+
+        # Main Frame with shadow
+        self.main_frame = QFrame()
+        self.main_frame.setObjectName("mainFrame")
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(30)
+        shadow.setColor(Qt.black)
+        shadow.setOffset(0, 10)
+        self.main_frame.setGraphicsEffect(shadow)
+        frame_layout = QVBoxLayout(self.main_frame)
+        frame_layout.setSpacing(25)
+        frame_layout.setContentsMargins(30, 30, 30, 30)
 
         # Header
-        main_layout.addWidget(self.create_header())
+        header = self.create_header()
+        frame_layout.addWidget(header)
 
         # Form
-        main_layout.addWidget(self.create_form_container())
+        form_container = self.create_form_container()
+        frame_layout.addWidget(form_container)
 
         # Buttons
-        main_layout.addLayout(self.create_buttons())
+        buttons_layout = self.create_buttons()
+        frame_layout.addLayout(buttons_layout)
 
-        # Flight results area
+        # Flight results
         self.results_area = QScrollArea()
         self.results_area.setWidgetResizable(True)
         self.results_container = QWidget()
         self.results_layout = QVBoxLayout(self.results_container)
-        self.results_container.setLayout(self.results_layout)
         self.results_area.setWidget(self.results_container)
         self.results_area.hide()
-        main_layout.addWidget(self.results_area)
+        frame_layout.addWidget(self.results_area)
 
-    # Header with title and close button
+        main_layout.addWidget(self.main_frame)
+
     def create_header(self):
         header = QFrame()
+        header.setObjectName("header")
         layout = QHBoxLayout(header)
-        layout.addWidget(QLabel("✈️"))
+        layout.setContentsMargins(20, 10, 20, 10)
+
+        icon = QLabel("✈️")
+        icon.setStyleSheet("font-size: 28pt; color: white;")
+        layout.addWidget(icon)
+
         title = QLabel("Book Your Flight")
-        title.setStyleSheet("font-weight:bold; font-size:20px;")
+        title.setObjectName("titleLabel")
         layout.addWidget(title)
         layout.addStretch()
+
         close_btn = QPushButton("✕")
+        close_btn.setObjectName("closeButton")
+        close_btn.setCursor(Qt.PointingHandCursor)
         close_btn.clicked.connect(self.close)
         layout.addWidget(close_btn)
+
         return header
 
-    # Form for selecting airports, date, passengers, class
     def create_form_container(self):
         frame = QFrame()
         layout = QVBoxLayout(frame)
+        layout.setSpacing(15)
 
         airport_names = [f"{a.city} ({a.code})" for a in self.airports]
 
-        # From airport
-        layout.addWidget(QLabel("From"))
-        self.from_input = QComboBox()
-        self.from_input.addItems(airport_names)
-        layout.addWidget(self.from_input)
-
-        # To airport
-        layout.addWidget(QLabel("To"))
-        self.to_input = QComboBox()
-        self.to_input.addItems(airport_names)
-        layout.addWidget(self.to_input)
+        # From / To
+        for label_text, combo_attr in [("From", "from_input"), ("To", "to_input")]:
+            lbl = QLabel(label_text)
+            lbl.setObjectName("label")
+            layout.addWidget(lbl)
+            combo = QComboBox()
+            combo.addItems(airport_names)
+            setattr(self, combo_attr, combo)
+            layout.addWidget(combo)
 
         # Departure date
-        layout.addWidget(QLabel("Departure Date"))
+        lbl_date = QLabel("Departure Date")
+        lbl_date.setObjectName("label")
+        layout.addWidget(lbl_date)
         self.date_input = QDateEdit()
         self.date_input.setCalendarPopup(True)
         self.date_input.setDate(QDate.currentDate())
         layout.addWidget(self.date_input)
 
         # Passengers
-        layout.addWidget(QLabel("Passengers"))
+        lbl_pass = QLabel("Passengers")
+        lbl_pass.setObjectName("label")
+        layout.addWidget(lbl_pass)
         self.passengers_input = QSpinBox()
         self.passengers_input.setMinimum(1)
         self.passengers_input.setMaximum(9)
         layout.addWidget(self.passengers_input)
 
-        # Class
-        layout.addWidget(QLabel("Travel Class"))
+        # Travel Class
+        lbl_class = QLabel("Travel Class")
+        lbl_class.setObjectName("label")
+        layout.addWidget(lbl_class)
         self.class_input = QComboBox()
         self.class_input.addItems(["Economy", "Premium Economy", "Business", "First Class"])
         layout.addWidget(self.class_input)
 
         return frame
 
-    # Cancel/Search buttons
     def create_buttons(self):
         layout = QHBoxLayout()
+        layout.setSpacing(20)
+
         cancel_btn = QPushButton("Cancel")
+        cancel_btn.setCursor(Qt.PointingHandCursor)
         cancel_btn.clicked.connect(self.close)
+
         self.submit_btn = QPushButton("Search Flights")
+        self.submit_btn.setCursor(Qt.PointingHandCursor)
+        self.submit_btn.setObjectName("searchButton")
         self.submit_btn.clicked.connect(self.search_flights)
+
         layout.addWidget(cancel_btn)
         layout.addWidget(self.submit_btn)
         return layout
+
+    # Rest of your methods like search_flights, create_flight_card, book_flight remain unchanged
+
 
     # Search flights based on form input
     def search_flights(self):

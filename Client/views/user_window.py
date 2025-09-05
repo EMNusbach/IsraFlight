@@ -6,14 +6,8 @@ from PySide6.QtGui import QCursor, QPainter, QPainterPath
 from PySide6.QtCore import Qt
 
 from controllers.api_controller import ApiController
-from controllers.flight_controller import FlightController
-from controllers.booking_controller import BookingController
-from controllers.airport_controller import AirportController
 from views.bookaflight import BookFlightWindow
 from views.MyBookingsWindow import MyBookingsWindow
-
-
-
 
 
 class UserWindow(QMainWindow):
@@ -23,21 +17,23 @@ class UserWindow(QMainWindow):
 
         self.setWindowTitle("IsraFlight - User Dashboard")
         self.setFixedSize(1000, 700)
-
+        print(f"User name set to: {self.name}")
         self.setWindowFlags(Qt.Window)
+
         self.setup_styling()
         self.init_ui()
-       
 
+    
+
+           
     def setup_styling(self):
+        """Apply same design as AdminWindow"""
         self.setStyleSheet("""
-            QMainWindow {
-                background: transparent;
-            }
+            QMainWindow { background: transparent; }
 
             QFrame#mainFrame {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #f9fafb, stop:1 #edf2f7);
+                    stop:0 #f8fafc, stop:1 #e2e8f0);
                 border: 1px solid rgba(226, 232, 240, 0.8);
             }
 
@@ -55,8 +51,6 @@ class UserWindow(QMainWindow):
                 font-size: 16pt;
                 font-weight: bold;
                 padding: 8px 12px;
-                min-width: 35px;
-                min-height: 25px;
             }
 
             QPushButton#backButton:hover {
@@ -78,7 +72,7 @@ class UserWindow(QMainWindow):
             }
 
             QLabel#welcomeLabel {
-                font-size: 22pt;
+                font-size: 24pt;
                 font-weight: 300;
                 color: #2d3748;
                 margin: 20px 0px;
@@ -86,7 +80,7 @@ class UserWindow(QMainWindow):
 
             QLabel#subtitleLabel {
                 font-size: 14pt;
-                color: #4a5568;
+                color: #718096;
                 margin-bottom: 30px;
             }
 
@@ -121,9 +115,26 @@ class UserWindow(QMainWindow):
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                     stop:0 #38a169, stop:1 #2f855a);
             }
+
+            QLabel#iconLabel {
+                font-size: 32pt;
+                color: rgba(255, 255, 255, 0.9);
+            }
+
+            QLabel#buttonTitle {
+                font-size: 16pt;
+                font-weight: bold;
+                color: white;
+            }
+
+            QLabel#buttonDesc {
+                font-size: 11pt;
+                color: rgba(255, 255, 255, 0.8);
+            }
         """)
 
     def init_ui(self):
+        """Initialize user dashboard UI"""
         self.main_frame = QFrame()
         self.main_frame.setObjectName("mainFrame")
 
@@ -134,6 +145,7 @@ class UserWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(self.main_frame)
 
+        # Shadow effect
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(40)
         shadow.setColor(Qt.black)
@@ -144,11 +156,10 @@ class UserWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # NavBar
+        # --- NavBar ---
         nav_bar = QWidget()
         nav_bar.setObjectName("navBar")
         nav_bar.setFixedHeight(70)
-
         nav_layout = QHBoxLayout(nav_bar)
         nav_layout.setContentsMargins(30, 15, 30, 15)
 
@@ -169,7 +180,7 @@ class UserWindow(QMainWindow):
 
         layout.addWidget(nav_bar)
 
-        # Content
+        # --- Content ---
         content = QWidget()
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(50, 40, 50, 50)
@@ -185,27 +196,25 @@ class UserWindow(QMainWindow):
         subtitle.setAlignment(Qt.AlignCenter)
         content_layout.addWidget(subtitle)
 
+        # --- Action Buttons ---
         grid = QGridLayout()
         grid.setSpacing(45)
 
-        # Book Flight Button
         self.btn_book_flight = self.create_action_button(
             "✈️", "Book a Flight", "Browse flights and reserve your flight", "bookFlightButton"
         )
 
-        # My Bookings Button
         self.btn_my_bookings = self.create_action_button(
             "🧾", "My Bookings", "View and manage your reservations", "myBookingsButton"
         )
 
         grid.addWidget(self.btn_book_flight, 0, 0)
         grid.addWidget(self.btn_my_bookings, 0, 1)
-
         content_layout.addLayout(grid)
         content_layout.addStretch()
         layout.addWidget(content)
 
-        # Connect actions
+        # --- Connect Actions ---
         self.btn_back.clicked.connect(self.close)
         self.btn_book_flight.clicked.connect(self.on_book_flight)
         self.btn_my_bookings.clicked.connect(self.on_my_bookings)
@@ -221,18 +230,21 @@ class UserWindow(QMainWindow):
         inner.setSpacing(6)
 
         lbl_icon = QLabel(icon)
+        lbl_icon.setObjectName("iconLabel")
         lbl_icon.setAlignment(Qt.AlignCenter)
+        inner.addWidget(lbl_icon)
+
         lbl_title = QLabel(title)
+        lbl_title.setObjectName("buttonTitle")
         lbl_title.setAlignment(Qt.AlignCenter)
+        inner.addWidget(lbl_title)
+
         lbl_desc = QLabel(desc)
+        lbl_desc.setObjectName("buttonDesc")
         lbl_desc.setAlignment(Qt.AlignCenter)
         lbl_desc.setWordWrap(True)
-
-        inner.addWidget(lbl_icon)
-        inner.addWidget(lbl_title)
         inner.addWidget(lbl_desc)
 
-        button.setProperty("class", style_class)
         button.setObjectName(style_class)
 
         shadow = QGraphicsDropShadowEffect()
@@ -245,16 +257,11 @@ class UserWindow(QMainWindow):
     def on_book_flight(self):
         self.book_flight_window = BookFlightWindow(self.user_id)
         self.book_flight_window.show()
-        print("🛫 Book Flight clicked")
-
 
     def on_my_bookings(self):
         api = ApiController(base_url="http://localhost:5126/api")
         self.my_bookings_window = MyBookingsWindow(self.user_id, api)
         self.my_bookings_window.show()
-
-
-        print("🧾 My Bookings clicked")
 
     def paintEvent(self, event):
         painter = QPainter(self)
