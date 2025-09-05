@@ -10,12 +10,22 @@ class FrequentFlyerController(QObject):
         self.api = api
     
     def register(self, data: dict):
-        response = self.api.post("/frequentflyers", json=data)
-        authData = {
-            "username": data["Username"],
-            "password": data["Password"],
-            "role": "frequentFlyer"
-        }
+        try:
+            response = self.api.post("/frequentflyers", json=data)
+            
+            # Continue only if user creation succeeded
+            authData = {
+                "username": data["Username"],
+                "password": data["Password"],
+                "role": "frequentFlyer"
+            }
 
-        self.api.post("/auths", json=authData )
-        return response
+            self.api.post("/auths", json=authData)
+
+            return {"success": True, "data": response}
+
+        except Exception as e:
+            if hasattr(e, 'response') and e.response is not None:
+                return {"success": False, "error": e.response.text}
+            return {"success": False, "error": str(e)}
+

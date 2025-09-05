@@ -230,9 +230,9 @@ class RegisterDialog(QDialog):
             msg_box.exec()
             return  # Stop registration
 
-        try:
-            response = self.frequentFlyer_controller.register(flyer)
+        result = self.frequentFlyer_controller.register(flyer)
 
+        if result["success"]:
             # Success message
             msg_box = QMessageBox()
             msg_box.setWindowTitle("Success")
@@ -241,12 +241,11 @@ class RegisterDialog(QDialog):
             msg_box.setStandardButtons(QMessageBox.Ok)
             msg_box.exec()
             self.accept()
-
-        except Exception as e:
-            # Error message
+        else:
+            # Failure - show the exact error from the backend
             msg_box = QMessageBox()
             msg_box.setWindowTitle("Error")
-            msg_box.setText(f"Registration failed:\n{str(e)}")
+            msg_box.setText(f"Registration failed:\n{result['error']}")
             msg_box.setIcon(QMessageBox.Critical)
             msg_box.setStandardButtons(QMessageBox.Ok)
             msg_box.exec()
