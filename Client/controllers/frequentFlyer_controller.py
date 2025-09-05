@@ -29,3 +29,12 @@ class FrequentFlyerController(QObject):
                 return {"success": False, "error": e.response.text}
             return {"success": False, "error": str(e)}
 
+
+    def get_full_name(self, user_id: int):
+        # ApiController.get already returns JSON, not Response
+        try:
+            data = self.api.get(f"FrequentFlyers/{user_id}")
+            return data.get("fullName", "Passenger")
+        except Exception as e:
+            print(f"Error fetching frequent flyer {user_id}: {e}")
+            return "Passenger"
