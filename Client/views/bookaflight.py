@@ -139,10 +139,10 @@ class BookFlightWindow(QWidget):
             and datetime.fromisoformat(f.departureTime).date() == departure_date
         ]
 
+        # If no exact matches, show all flights
         if not matched:
-            QMessageBox.information(self, "No Flights", "No flights found")
-            self.results_area.hide()
-            return
+            matched = flights
+            QMessageBox.information(self, "No Exact Matches", "No flights match your criteria. Showing all available flights.")
 
         # Clear old results
         for i in reversed(range(self.results_layout.count())):
@@ -156,6 +156,7 @@ class BookFlightWindow(QWidget):
             self.results_layout.addWidget(flight_card)
 
         self.results_area.show()
+
 
     # Create a card widget for each flight
     def create_flight_card(self, flight: Flight):
@@ -208,20 +209,36 @@ class BookFlightWindow(QWidget):
         return -1
 
     # Check Shabbat restriction and book flight
-    def book_flight(self, flight: Flight):
-        arrival_time = datetime.fromisoformat(flight.arrivalTime)
-        if (arrival_time.weekday() == 4 and arrival_time.hour >= 18) or arrival_time.weekday() == 5:
-            QMessageBox.warning(self, "Shabbat Restriction", "Flight lands on Shabbat.")
-            return
 
+    def book_flight(self, flight: Flight):
         try:
+            # Attempt to create booking via backend
             booking = self.booking_ctrl.create_booking(self.user_id, flight.id)
-            QMessageBox.information(self, "Booking Successful",
-                        f"Booking ID: {booking.id}\nFlight: {booking.flightId}")
+            QMessageBox.information(
+                self,
+                "Booking Successful",
+                f"Booking ID: {booking.id}\nFlight: {booking.flightId}"
+            )
             self.generate_pdf_ticket(booking)
             self.close()
+
         except Exception as e:
-            QMessageBox.critical(self, "Booking Failed", str(e))
+            # Try to parse backend JSON error
+            import json
+            try:
+                error_data = json.loads(str(e))
+                message = error_data.get("message", "Booking failed")
+                parasha = error_data.get("parasha")
+                entry = error_data.get("shabbatEntry")
+                exit = error_data.get("shabbatExit")
+                if parasha and entry and exit:
+                    message += f"\nParasha: {parasha}\nShabbat: {entry} → {exit}"
+            except Exception:
+                message = str(e)  # fallback if parsing fails
+
+            QMessageBox.warning(self, "Booking Failed", message)
+
+
 
     # Generate PDF ticket
     def generate_pdf_ticket(self, booking):

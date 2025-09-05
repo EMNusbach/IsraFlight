@@ -18,9 +18,19 @@ class ApiController:
         return resp.json()
 
     def post(self, path, json=None, data=None, files=None):
-        resp = self.session.post(self._url(path), json=json, data=data, files=files, timeout=30)
-        resp.raise_for_status()
-        return resp.json()
+        try:
+            resp = self.session.post(self._url(path), json=json, data=data, files=files, timeout=30)
+            resp.raise_for_status()
+            return resp.json()
+        except requests.exceptions.HTTPError as e:
+            try:
+                # Try to parse JSON from the error response
+                error_data = resp.json()
+            except Exception:
+                error_data = {"message": str(e), "content": resp.text}
+            import json
+            raise Exception(json.dumps(error_data))
+
 
     def put(self, path, json=None):
         resp = self.session.put(self._url(path), json=json, timeout=20)
