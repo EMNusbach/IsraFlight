@@ -9,18 +9,25 @@ from controllers.api_controller import ApiController
 from controllers.flight_controller import FlightController
 from controllers.booking_controller import BookingController
 from controllers.airport_controller import AirportController
+from views.bookaflight import BookFlightWindow
+from views.MyBookingsWindow import MyBookingsWindow
+
+
+
 
 
 class UserWindow(QMainWindow):
-    def __init__(self, user_id):
+    def __init__(self, user_obj):
         super().__init__()
-        self.user_id = user_id
+        self.user_id = getattr(user_obj, "Id", None) or getattr(user_obj, "id", None)
+
         self.setWindowTitle("IsraFlight - User Dashboard")
         self.setFixedSize(1000, 700)
 
         self.setWindowFlags(Qt.Window)
         self.setup_styling()
         self.init_ui()
+       
 
     def setup_styling(self):
         self.setStyleSheet("""
@@ -236,17 +243,17 @@ class UserWindow(QMainWindow):
         return button
 
     def on_book_flight(self):
-        api = ApiController(base_url="http://localhost:5126/api")
-        flight_ctrl = FlightController(api)
-        airport_ctrl = AirportController(api)
-        booking_ctrl = BookingController(api)
-        # TODO: Open a Flight Search/Booking window
+        self.book_flight_window = BookFlightWindow(self.user_id)
+        self.book_flight_window.show()
         print("🛫 Book Flight clicked")
+
 
     def on_my_bookings(self):
         api = ApiController(base_url="http://localhost:5126/api")
-        booking_ctrl = BookingController(api)
-        # TODO: Open MyBookings window
+        self.my_bookings_window = MyBookingsWindow(self.user_id, api)
+        self.my_bookings_window.show()
+
+
         print("🧾 My Bookings clicked")
 
     def paintEvent(self, event):

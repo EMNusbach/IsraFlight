@@ -1,4 +1,3 @@
-
 from .api_controller import ApiController
 from models import Booking
 
@@ -7,9 +6,9 @@ class BookingController:
         self.api = api
 
     def create_booking(self, user_id, flight_id, seat=None):
-        data = {"userId": user_id, "flightId": flight_id, "seat": seat}
+        data = {"frequentFlyerId": user_id, "flightId": flight_id, "seat": seat}  # <-- rename
         res = self.api.post("/bookings", json=data)
-        return Booking(**res)
+        return Booking(**res)  # ✅ now works without mapping
 
     def list_user_bookings(self, user_id):
         res = self.api.get(f"/bookings", params={"userId": user_id})
