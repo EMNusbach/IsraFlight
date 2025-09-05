@@ -17,7 +17,7 @@ class UserWindow(QMainWindow):
 
         self.setWindowTitle("IsraFlight - User Dashboard")
         self.setFixedSize(1000, 700)
-        print(f"User name set to: {self.name}")
+        # print(self.name)
         self.setWindowFlags(Qt.Window)
 
         self.setup_styling()
@@ -186,7 +186,7 @@ class UserWindow(QMainWindow):
         content_layout.setContentsMargins(50, 40, 50, 50)
         content_layout.setSpacing(30)
 
-        welcome = QLabel(f"Welcome back, User #{self.user_id}")
+        welcome = QLabel(f"Welcome back")
         welcome.setObjectName("welcomeLabel")
         welcome.setAlignment(Qt.AlignCenter)
         content_layout.addWidget(welcome)

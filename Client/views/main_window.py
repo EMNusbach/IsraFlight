@@ -5,6 +5,8 @@ from controllers.auth_controller import AuthController
 from controllers.api_controller import ApiController
 from views.login_dialog import LoginDialog
 from views.user_window import UserWindow
+from views.admin_window import AdminWindow
+from controllers.admin_controller import AdminController
 
 
 class MainWindow(QMainWindow):
@@ -198,14 +200,19 @@ class MainWindow(QMainWindow):
         api = ApiController(base_url="http://localhost:5126/api")
         auth_controller = AuthController(api=api)
         dialog = LoginDialog(auth_controller, api)
-        dialog.setParent(self)
+        # dialog.setParent(self)
 
         if dialog.exec():
             user = dialog.get_user()
             print("✅ Login successful!", user)
 
-            self.user_window = UserWindow(user)   # keep a reference here
-            self.user_window.show()
+            if user.Role.lower() == "admin":
+                self.admin_window = AdminWindow(AdminController(api))
+                self.admin_window.show()
+            else:
+                self.user_window = UserWindow(user)
+                self.user_window.show()
+
 
             self.close()  # close landing page
         else:

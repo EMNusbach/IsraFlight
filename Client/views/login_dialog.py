@@ -281,18 +281,8 @@ class LoginDialog(QDialog):
     def on_login_success(self, user_obj):
         """Handle successful login"""
         self.user_obj = user_obj   # <-- save the user object
-        
-        if user_obj.Role.lower() == "admin":
-            admin_ctrl = AdminController(self.api)
-            dlg = AdminWindow(admin_ctrl)
-            dlg.setParent(self.parent())  # Set proper parent
-            self.accept()  # Close login dialog first
-            dlg.show()
-        else:
-            # Open user dashboard
-            self.user_window = UserWindow(user_obj)
-            self.user_window.show()
-            self.accept()  # Close login dialog
+        self.accept()  # Close dialog with success
+      
 
     
     def on_login_failure(self, message):
