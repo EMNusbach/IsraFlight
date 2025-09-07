@@ -1,9 +1,9 @@
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTableWidgetItem
+from datetime import datetime
 from .api_controller import ApiController
 from views.arrivals_window import ArrivalsWindow
-from datetime import datetime
+
 
 class ArrivalsController(QObject):
     # Signals for UI updates
@@ -15,22 +15,19 @@ class ArrivalsController(QObject):
         self.window = window
         self.api = api
 
-        # Connect the Load Arrivals button
+        # Connect refresh button
         self.window.refresh_btn.clicked.connect(self.load_arrivals)
 
     def load_arrivals(self):
+        """Fetch arrivals from API and update table."""
         hours = self.window.hours_spin.value()
         try:
-            # Call your backend
             flights = self.api.get(f"/flights/arrivals?hoursAhead={hours}")
 
-            # Handle wrapper and default to empty list
             if isinstance(flights, dict):
                 flights = flights.get("data", [])
-            
-            print(f"Fetched {len(flights)} arrivals")
-            print(f"Sample data: {flights[:2]}")  # Print first 2 entries for inspection
 
+            print(f"Fetched {len(flights)} arrivals")
             self.populate_table(flights)
             self.data_loaded.emit(flights)
 
@@ -39,44 +36,48 @@ class ArrivalsController(QObject):
             self.window.table.setItem(0, 0, QTableWidgetItem(f"Error: {str(e)}"))
             self.error_occurred.emit(str(e))
 
+    def populate_table(self, flights: list):
+        """Fill the arrivals QTableWidget with data."""
+        table = self.window.table
+        table.setRowCount(0)
 
-    def populate_table(self, flights):
-        self.window.table.setRowCount(len(flights))
+        if not flights:
+            table.setRowCount(1)
+            table.setItem(0, 0, QTableWidgetItem("No arrivals found"))
+            return
 
-        for row, flight in enumerate(flights):
-            # Keys handling
-            flight_number = flight.get("flightNumber") or flight.get("flight_number") or ""
-            airline = flight.get("Airline") or flight.get("airline") or ""
-            origin = flight.get("Origin") or flight.get("origin") or ""
-            terminal = flight.get("Terminal") or flight.get("terminal") or ""
-            status = flight.get("Status") or flight.get("status") or ""
+        for flight in flights:
+            row = table.rowCount()
+            table.insertRow(row)
 
-            # Scheduled arrival
-            sched = flight.get("scheduledArrival") or flight.get("scheduled_arrival") or ""
-            scheduled_arrival_str = ""
-            if sched:
-                try:
-                    dt = sched if isinstance(sched, datetime) else datetime.fromisoformat(sched)
-                    scheduled_arrival_str = dt.strftime("%Y-%m-%d %H:%M")
-                except Exception:
-                    scheduled_arrival_str = str(sched)
+            flight_number = flight.get("flightNumber", flight.get("flight_number", ""))
+            airline = flight.get("airline", flight.get("Airline", ""))
+            origin = flight.get("origin", flight.get("Origin", ""))
+            terminal = flight.get("terminal", flight.get("Terminal", ""))
+            gate = flight.get("gate", flight.get("Gate", ""))
+            status = flight.get("status", flight.get("Status", ""))
+            sched = flight.get("scheduledArrival", flight.get("scheduled_arrival", ""))
 
-            # Populate cells
-            self.window.table.setItem(row, 0, QTableWidgetItem(flight_number))
-            self.window.table.setItem(row, 1, QTableWidgetItem(airline))
-            self.window.table.setItem(row, 2, QTableWidgetItem(origin))
-            self.window.table.setItem(row, 3, QTableWidgetItem(scheduled_arrival_str))
-            self.window.table.setItem(row, 4, QTableWidgetItem(terminal))
-            self.window.table.setItem(row, 5, QTableWidgetItem(status))
+            # Format time
+            try:
+                dt = sched if isinstance(sched, datetime) else datetime.fromisoformat(sched)
+                sched_str = dt.strftime("%b %d, %H:%M")
+            except:
+                sched_str = str(sched)
 
-            # Highlight active flights
-           # Highlight active and delayed flights
-            if status.lower() == "active":
-                status_item = self.window.table.item(row, 5)  # Status column
-                if status_item:
-                    status_item.setForeground(QColor("#19D619"))  # green text
-            elif status.lower() == "delayed":
-                # Only change the text color of the Status cell
-                status_item = self.window.table.item(row, 5)  # Status column
-                if status_item:
-                    status_item.setForeground(QColor("#e74c3c"))  # red text
+            values = [flight_number, airline, origin, sched_str, terminal, gate, status]
+
+            for col, val in enumerate(values):
+                item = QTableWidgetItem(str(val))
+
+                # ✅ Status coloring
+                if col == 6:  # status column
+                    status_lower = str(val).lower()
+                    if "active" in status_lower:
+                        item.setForeground(self.window.green_brush)
+                    elif "delay" in status_lower:
+                        item.setForeground(self.window.red_brush)
+                    else:
+                        item.setForeground(self.window.gray_brush)
+
+                table.setItem(row, col, item)

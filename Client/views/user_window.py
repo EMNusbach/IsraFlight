@@ -2,12 +2,13 @@ from PySide6.QtWidgets import (
     QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QWidget, QFrame, QGraphicsDropShadowEffect, QGridLayout
 )
-from PySide6.QtGui import QCursor, QPainter, QPainterPath
+from PySide6.QtGui import QCursor
 from PySide6.QtCore import Qt
 
 from controllers.api_controller import ApiController
 from views.bookaflight import BookFlightWindow
 from views.MyBookingsWindow import MyBookingsWindow
+from views.arrivals_window import ArrivalsWindow
 
 
 class UserWindow(QMainWindow):
@@ -23,7 +24,7 @@ class UserWindow(QMainWindow):
         self.init_ui()
 
     def setup_styling(self):
-        """Apply exact AdminWindow design styling"""
+        """Apply AdminWindow-like styling"""
         self.setStyleSheet("""
             QMainWindow { background: transparent; }
 
@@ -109,6 +110,15 @@ class UserWindow(QMainWindow):
                     stop:0 #38a169, stop:1 #2f855a);
             }
 
+            QPushButton#arrivalsButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #f6ad55, stop:1 #dd6b20);
+            }
+            QPushButton#arrivalsButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #ed8936, stop:1 #c05621);
+            }
+
             QLabel#iconLabel {
                 font-size: 32pt;
                 color: rgba(255, 255, 255, 0.9);
@@ -191,20 +201,24 @@ class UserWindow(QMainWindow):
         subtitle.setAlignment(Qt.AlignCenter)
         content_layout.addWidget(subtitle)
 
-        # --- Buttons Grid (2x2 style) ---
+        # --- Buttons Grid ---
         grid = QGridLayout()
         grid.setSpacing(45)
 
         self.btn_book_flight = self.create_action_button(
             "✈️", "Book a Flight", "Browse flights and reserve your flight", "bookFlightButton"
         )
-
         self.btn_my_bookings = self.create_action_button(
             "🧾", "My Bookings", "View and manage your reservations", "myBookingsButton"
         )
+        self.btn_arrivals = self.create_action_button(
+            "🛬", "Arrivals", "Check real-time flight arrivals at Ben Gurion", "arrivalsButton"
+        )
 
+        # Layout: 2 buttons on top row, arrivals button spans bottom
         grid.addWidget(self.btn_book_flight, 0, 0)
         grid.addWidget(self.btn_my_bookings, 0, 1)
+        grid.addWidget(self.btn_arrivals, 1, 0, 1, 2)
 
         content_layout.addLayout(grid)
         content_layout.addStretch()
@@ -214,6 +228,7 @@ class UserWindow(QMainWindow):
         self.btn_back.clicked.connect(self.close)
         self.btn_book_flight.clicked.connect(self.on_book_flight)
         self.btn_my_bookings.clicked.connect(self.on_my_bookings)
+        self.btn_arrivals.clicked.connect(self.view_arrivals)
 
     def create_action_button(self, icon, title, desc, style_class):
         button = QPushButton()
@@ -243,7 +258,7 @@ class UserWindow(QMainWindow):
 
         button.setObjectName(style_class)
 
-        # Shadow like AdminWindow
+        # Shadow
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(15)
         shadow.setOffset(0, 5)
@@ -260,10 +275,14 @@ class UserWindow(QMainWindow):
         self.my_bookings_window = MyBookingsWindow(self.user_id, api)
         self.my_bookings_window.show()
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        path = QPainterPath()
-        path.addRoundedRect(self.rect(), 20, 20)
-        painter.fillPath(path, Qt.transparent)
-        super().paintEvent(event)
+    def view_arrivals(self):
+        api = ApiController(base_url="http://localhost:5126/api")
+        self.arrivals_window = ArrivalsWindow(api)
+        
+        # Initialize the controller
+        from controllers.arrivals_controller import ArrivalsController
+        self.arrivals_controller = ArrivalsController(self.arrivals_window, api)
+        
+        self.arrivals_window.show()
+
+
