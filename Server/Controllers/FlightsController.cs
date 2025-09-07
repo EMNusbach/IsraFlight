@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.Models;
+using Server.Services;
 
 namespace Server.Controllers
 {
@@ -10,7 +11,17 @@ namespace Server.Controllers
     public class FlightsController : ControllerBase
     {
         private readonly AppDbContext _db;
-        public FlightsController(AppDbContext db) { _db = db; }
+        private readonly FlightsService _flightsService;
+
+        public FlightsController(AppDbContext db, FlightsService flightsService)
+        {
+            _db = db;
+            _flightsService = flightsService;
+        }
+
+        // ============================
+        // DB-Backed Endpoints
+        // ============================
 
         // GET: api/flights
         [HttpGet]
@@ -83,7 +94,6 @@ namespace Server.Controllers
             return Ok(f);
         }
 
-
         // DELETE: api/flights/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFlight(int id)
@@ -99,5 +109,26 @@ namespace Server.Controllers
 
             return NoContent();
         }
+
+        // ============================
+        // NEW: Real-time Arrivals (TLV / LLBG)
+        // ============================
+
+        // GET: api/flights/arrivals?hoursAhead=3
+       [HttpGet("arrivals")]
+        public async Task<IActionResult> GetArrivals([FromQuery] int hoursAhead = 1)
+        {
+            try
+            {
+                var flights = await _flightsService.GetArrivalsAsync(hoursAhead, "TLV");
+                return Ok(flights);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+
     }
 }

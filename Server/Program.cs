@@ -15,6 +15,8 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<HebCalService>();
+builder.Services.AddHttpClient<Server.Services.FlightsService>();
+
 
 
 // Add EF Core and connection string
