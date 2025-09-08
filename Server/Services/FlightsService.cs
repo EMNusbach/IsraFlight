@@ -60,15 +60,25 @@ namespace Server.Services
             if (!doc.RootElement.TryGetProperty("data", out var data))
                 return flights;
 
+            // Calculate time window for filtering
+            var now = DateTime.Now;
+            var endTime = now.AddHours(hoursAhead);
+
+            Console.WriteLine($"[DEBUG] Filtering flights from {now:yyyy-MM-dd HH:mm} to {endTime:yyyy-MM-dd HH:mm}");
+
             foreach (var item in data.EnumerateArray())
             {
                 try
                 {
                     var flightDto = ExtractFlightData(item);
-                    if (flightDto != null)
+                    if (flightDto != null && ShouldIncludeFlight(flightDto, now, endTime))
                     {
                         flights.Add(flightDto);
-                        Console.WriteLine($"[DEBUG] Added flight: {flightDto.FlightNumber} from {flightDto.Origin} - {flightDto.Status}");
+                        Console.WriteLine($"[DEBUG] Added flight: {flightDto.FlightNumber} from {flightDto.Origin} - {flightDto.ScheduledArrival} - {flightDto.Status}");
+                    }
+                    else if (flightDto != null)
+                    {
+                        Console.WriteLine($"[DEBUG] Excluded flight: {flightDto.FlightNumber} - {flightDto.ScheduledArrival} (outside time window)");
                     }
                 }
                 catch (Exception ex)
@@ -77,7 +87,31 @@ namespace Server.Services
                 }
             }
 
+            // Sort by scheduled arrival time
+            flights = flights.OrderBy(f => f.ScheduledArrival).ToList();
+
+            Console.WriteLine($"[DEBUG] Returning {flights.Count} filtered flights");
             return flights;
+        }
+
+        private bool ShouldIncludeFlight(FlightArrivalDto flight, DateTime now, DateTime endTime)
+        {
+            if (!flight.ScheduledArrival.HasValue)
+            {
+                Console.WriteLine($"[DEBUG] Flight {flight.FlightNumber} has no scheduled arrival time - excluding");
+                return false;
+            }
+
+            var arrivalTime = flight.ScheduledArrival.Value;
+            
+            // Include flights arriving from now until the specified hours ahead
+            // Allow some buffer for flights that might be slightly in the past (e.g., 30 minutes)
+            var bufferTime = now.AddMinutes(-30);
+            var isInTimeWindow = arrivalTime >= bufferTime && arrivalTime <= endTime;
+
+            Console.WriteLine($"[DEBUG] Flight {flight.FlightNumber}: Arrival={arrivalTime:HH:mm}, Window={bufferTime:HH:mm}-{endTime:HH:mm}, Include={isInTimeWindow}");
+            
+            return isInTimeWindow;
         }
 
         private string ExtractFlightNumber(JsonElement item)
