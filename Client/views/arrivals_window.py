@@ -32,8 +32,10 @@ class ArrivalsWindow(QMainWindow):
         nav_layout.setContentsMargins(30, 20, 30, 20)
 
         self.btn_back = QPushButton("←")
+        self.btn_back.setObjectName("backButton")   # 👈 important
         self.btn_back.setCursor(QCursor(Qt.PointingHandCursor))
         self.btn_back.clicked.connect(self.close)
+
 
         title_label = QLabel("✈ Arrivals - Ben Gurion Airport")
         title_label.setObjectName("titleLabel")
@@ -113,4 +115,20 @@ class ArrivalsWindow(QMainWindow):
         QLabel#brandLabel { font-weight: bold; color: white; font-size: 16pt; }
         QPushButton { font-weight: bold; border-radius: 6px; padding: 6px 12px; }
         QPushButton:hover { opacity: 0.85; }
+        
+        QPushButton#backButton {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+        font-size: 16pt;
+        font-weight: bold;
+        padding: 6px 12px;
+        min-width: 35px;
+        min-height: 25px;
+        }
+        QPushButton#backButton:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
         """

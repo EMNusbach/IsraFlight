@@ -228,6 +228,7 @@ class BookFlightWindow(QMainWindow):
         for f in matched:
             flight_card = self.create_flight_card(f)
             self.flights_layout.addWidget(flight_card)
+        self.flights_layout.addStretch()
 
         # Show results section
         self.results_section.show()
@@ -240,6 +241,10 @@ class BookFlightWindow(QMainWindow):
         """Create a modern flight card"""
         card = QFrame()
         card.setObjectName("flightCard")
+        
+        card.setMinimumHeight(160)   # adjust as you like
+        card.setMaximumHeight(160)   # lock height so it doesn’t shrink
+        card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         
         # Main card layout
         main_layout = QVBoxLayout(card)
