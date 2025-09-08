@@ -21,17 +21,25 @@ namespace Server.Controllers
 
         // GET: api/bookings
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Booking>>> Get()
+        public async Task<ActionResult<IEnumerable<Booking>>> Get([FromQuery] int? userId)
         {
             try
             {
-                return Ok(await _db.Bookings.ToListAsync());
+                IQueryable<Booking> query = _db.Bookings;
+
+                if (userId.HasValue)
+                {
+                    query = query.Where(b => b.FrequentFlyerId == userId.Value);
+                }
+
+                return Ok(await query.ToListAsync());
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "Error retrieving bookings");
             }
         }
+
 
         // GET: api/bookings/5
         [HttpGet("{id}")]

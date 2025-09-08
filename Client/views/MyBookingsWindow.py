@@ -105,7 +105,9 @@ class MyBookingsWindow(QMainWindow):
 
         card = QFrame()
         card.setObjectName("bookingCard")
-        
+        card.setMinimumHeight(200)
+
+                
         # Main card layout
         main_layout = QVBoxLayout(card)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -256,27 +258,6 @@ class MyBookingsWindow(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.setSpacing(8)
 
-        update_btn = QPushButton("Edit")
-        update_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #1a202c, stop:1 #2d3748);
-                color: white;
-                padding: 8px 16px;
-                font-size: 11pt;
-                font-weight: bold;
-                border-radius: 6px;
-                border: none;
-                min-width: 50px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #2d3748, stop:1 #4a5568);
-            }
-        """)
-        update_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        update_btn.clicked.connect(lambda: self.open_update_form(flight))
-
         delete_btn = QPushButton("Delete")
         delete_btn.setStyleSheet("""
             QPushButton {
@@ -294,9 +275,8 @@ class MyBookingsWindow(QMainWindow):
             }
         """)
         delete_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        delete_btn.clicked.connect(lambda: self.delete_flight(flight.id))
+        delete_btn.clicked.connect(lambda _, b=booking: self.delete_flight(b.id))
 
-        button_layout.addWidget(update_btn)
         button_layout.addWidget(delete_btn)
         right_layout.addLayout(button_layout)
 
@@ -368,6 +348,9 @@ class MyBookingsWindow(QMainWindow):
                 continue
             card = self.create_booking_card(booking, flight)
             self.bookings_layout.addWidget(card)
+            
+        self.bookings_layout.addStretch()
+
 
     # You'll need to implement these methods based on your application logic
     def open_update_form(self, flight):
@@ -375,16 +358,21 @@ class MyBookingsWindow(QMainWindow):
         # Implement based on your application needs
         QMessageBox.information(self, "Update", f"Update form for flight {flight.id}")
 
-    def delete_flight(self, flight_id):
+    def delete_flight(self, booking_id):
         """Delete flight booking"""
-        # Implement based on your application needs
-        reply = QMessageBox.question(self, "Delete Booking", 
-                                   "Are you sure you want to delete this booking?",
-                                   QMessageBox.Yes | QMessageBox.No)
+        reply = QMessageBox.question(
+            self, "Delete Booking",
+            "Are you sure you want to delete this booking?",
+            QMessageBox.Yes | QMessageBox.No
+        )
         if reply == QMessageBox.Yes:
-            # Add your delete logic here
-            QMessageBox.information(self, "Deleted", f"Booking for flight {flight_id} deleted")
-            self.load_bookings()  # Refresh the list
+            try:
+                self.booking_controller.delete_booking(booking_id)
+                QMessageBox.information(self, "Deleted", "Booking deleted successfully")
+                self.load_bookings()  # Refresh the list
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Could not delete booking:\n{e}")
+
 
     def get_stylesheet(self):
         return """

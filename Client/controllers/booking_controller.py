@@ -20,3 +20,8 @@ class BookingController:
     def list_user_bookings(self, user_id):
         res = self.api.get("/bookings", params={"userId": user_id})
         return [Booking(**b) for b in res]
+    
+    def delete_booking(self, booking_id: int):
+        res = self.api.delete(f"/bookings/{booking_id}")
+        return res
+
